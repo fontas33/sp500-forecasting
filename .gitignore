@@ -3,6 +3,10 @@ __pycache__/
 *.pyc
 .env
 data/*.csv
+!data/validation_search_log.csv
+!data/selected_configs.csv
+!data/final_test_results.csv
+!data/backtest_results.csv
 *.pt
 .DS_Store
 .ipynb_checkpoints/
