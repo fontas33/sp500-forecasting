@@ -72,4 +72,5 @@ typing_extensions==4.16.0
 tzdata==2026.3
 urllib3==2.7.0
 websockets==17.0.1
+xgboost==3.4.1
 yfinance==1.6.0
