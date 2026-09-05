@@ -97,3 +97,24 @@ if __name__ == "__main__":
     print(f"\nΑνοιχτές θέσεις:  {len(positions)}")
     for p in positions:
         print(f"  {p['symbol']}: {p['qty']} @ ${float(p['avg_entry_price']):,.2f}")
+
+def get_news(symbols="SPY", start=None, end=None, limit=50, page_token=None):
+    """
+    Ειδήσεις από το Alpaca news API.
+    
+    Σημείωση: το news endpoint είναι σε διαφορετικό host από το trading API.
+    """
+    _check_credentials()
+    url = "https://data.alpaca.markets/v1beta1/news"
+    params = {"symbols": symbols, "limit": limit}
+    if page_token:
+        params["page_token"] = page_token
+    if start:
+        params["start"] = start
+    if end:
+        params["end"] = end
+
+    response = requests.get(url, headers=HEADERS, params=params, timeout=15)
+    if not response.ok:
+        raise AlpacaError(f"{response.status_code}: {response.text[:300]}")
+    return response.json()
