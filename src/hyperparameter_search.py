@@ -35,7 +35,7 @@ SEEDS = [1, 2, 3]
 
 FEATURE_SETS = {
     "tech7": FEATURES_TECH,
-    "full10": FEATURES_TECH + FEATURES_MACRO + ["SentimentMean"],
+    "full10_alpaca": FEATURES_TECH + FEATURES_MACRO + ["SentimentMean"],
 }
 
 NN_SPACE = {"lookback": [30, 60, 90], "hidden": [32, 64, 128],
@@ -72,18 +72,26 @@ def bal_acc(y_true, y_pred_signal):
 
 
 def prepare_data():
-    """Φορτώνει και προετοιμάζει τα δύο datasets (tech7 πλήρες, full10 περιορισμένο)."""
+    """
+    Και τα δύο feature sets στο ΙΔΙΟ χρονικό εύρος (Alpaca coverage: 2015-2026),
+    ώστε η σύγκριση να είναι δίκαιη.
+    """
+    from alpaca_sentiment import attach_alpaca_sentiment
+
     market = load_snapshot()
     base = build_features(market).dropna(subset=FEATURES_TECH + [TARGET]).reset_index(drop=True)
-    with_sentiment = attach_sentiment(base).dropna(
+
+    with_sent = attach_alpaca_sentiment(base).dropna(
         subset=FEATURES_TECH + FEATURES_MACRO + ["SentimentMean"]
     ).reset_index(drop=True)
 
-    return {
-        "tech7": chronological_split(base),
-        "full10": chronological_split(with_sentiment),
-    }
+    # Το tech7 περιορίζεται στο ίδιο εύρος για δίκαιη σύγκριση
+    common_range = base[base["Date"].isin(with_sent["Date"])].reset_index(drop=True)
 
+    return {
+        "tech7": chronological_split(common_range),
+        "full10_alpaca": chronological_split(with_sent),
+    }
 
 def get_sequences(splits, feature_cols, lookback):
     train_df, val_df, test_df = splits
