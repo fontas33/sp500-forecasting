@@ -127,15 +127,21 @@ def diagnostics(stored_preds):
         print(f"{fs:7s} {mn:7s}: {bonf_alpha*100/2:.2f}%-{100-bonf_alpha*100/2:.2f}% "
               f"CI[{lo*100:5.2f}, {hi*100:5.2f}]  -> {verdict}")
     
-    print("\n=== McNemar: tech7 vs full10 ανά αρχιτεκτονική (seed 1) ===")
-    for mn in ["LSTM", "GRU", "LogReg", "RF", "XGB"]:
-        ka, kb = ("tech7", mn), ("full10", mn)
-        if ka in stored_preds and kb in stored_preds:
-            da, db = stored_preds[ka], stored_preds[kb]
-            L = min(len(da["y"]), len(db["y"]))
-            p = mcnemar_test(da["y"][-L:], da["P"][0][-L:], db["P"][0][-L:])
-            verdict = "ΣΗΜΑΝΤΙΚΗ" if p < 0.05 else "μη σημαντική"
-            print(f"{mn:7s}: p = {p:.4f}  -> {verdict}")
+    fs_names = sorted({fs for fs, _ in stored_preds})
+    if len(fs_names) == 2:
+        fs_a, fs_b = fs_names
+        print(f"\n=== McNemar: {fs_a} vs {fs_b} ανά αρχιτεκτονική (seed 1) ===")
+        for mn in ["LSTM", "GRU", "LogReg", "RF", "XGB"]:
+            ka, kb = (fs_a, mn), (fs_b, mn)
+            if ka in stored_preds and kb in stored_preds:
+                da, db = stored_preds[ka], stored_preds[kb]
+                L = min(len(da["y"]), len(db["y"]))
+                p = mcnemar_test(da["y"][-L:], da["P"][0][-L:], db["P"][0][-L:])
+                verdict = "ΣΗΜΑΝΤΙΚΗ" if p < 0.05 else "μη σημαντική"
+                print(f"{mn:7s}: p = {p:.4f}  -> {verdict}")
+    else:
+        print(f"\n[McNemar παραλείπεται: βρέθηκαν {len(fs_names)} feature sets, "
+              f"η σύγκριση ορίζεται για 2]")
 
     print("\n=== Διάγνωση mode collapse (μόνο LSTM/GRU — ίδιες μονάδες με actual) ===")
     for (fs, mn), d in stored_preds.items():
