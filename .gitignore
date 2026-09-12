@@ -8,7 +8,9 @@ data/*.csv
 !data/final_test_results.csv
 !data/backtest_results.csv
 !data/walkforward_results.csv
+!data/signal_log.csv
 models/*.pkl
+models/*.pt
 *.pt
 .DS_Store
 .ipynb_checkpoints/
