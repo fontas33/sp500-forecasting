@@ -44,7 +44,7 @@ def perf_metrics(returns, rf_series, label, exposure=None, n_trades=None):
              if excess.std(ddof=1) > 0 else np.nan)
     downside = excess[excess < 0]
     sortino = (excess.mean() / downside.std(ddof=1) * np.sqrt(TRADING_DAYS)
-              if len(downside) > 1 else np.nan)
+              if len(downside) > 1 and downside.std(ddof=1) > 0 else np.nan)
     peak = np.maximum.accumulate(cum)
     mdd = ((cum - peak) / peak).min()
     return {"strategy": label, "total_return": cum[-1] - 1, "CAGR": cagr,
