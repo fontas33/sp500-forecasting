@@ -19,15 +19,16 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "trading"))
 
 from models import ARCHITECTURES
-from live_features import build_live_window, load_metadata, LiveFeatureError
+from live_features import (build_live_window, load_metadata, LiveFeatureError , DEFAULT_FEATURE_SET)
 
 MODEL_DIR = ROOT / "models"
 LOG_PATH = ROOT / "data" / "signal_log.csv"
 
 
-def load_production_model(meta):
+def load_production_model(meta, feature_set):
     """Φορτώνει μοντέλο + scaler από τα αποθηκευμένα artifacts."""
-    with open(MODEL_DIR / "production_scaler.pkl", "rb") as f:
+    model_dir = MODEL_DIR / feature_set
+    with open(model_dir / "production_scaler.pkl", "rb") as f:
         scaler = pickle.load(f)
 
     if meta["is_neural"]:
@@ -36,25 +37,25 @@ def load_production_model(meta):
         model = Model(n_features=params["n_features"],
                       hidden_size=params["hidden_size"],
                       dropout=params["dropout"])
-        model.load_state_dict(torch.load(MODEL_DIR / "production_model.pt",
+        model.load_state_dict(torch.load(model_dir / "production_model.pt",
                                          map_location="cpu"))
         model.eval()
     else:
-        with open(MODEL_DIR / "production_model.pkl", "rb") as f:
+        with open(model_dir / "production_model.pkl", "rb") as f:
             model = pickle.load(f)
 
     return model, scaler
 
 
-def generate_signal():
+def generate_signal(feature_set=DEFAULT_FEATURE_SET):
     """
     Επιστρέφει dict με το σήμα και όλο το context.
 
     Το σήμα είναι 1 (long) ή 0 (cash), βάσει του threshold των metadata.
     """
-    meta = load_metadata()
-    X, info = build_live_window()
-    model, scaler = load_production_model(meta)
+    meta = load_metadata(feature_set)
+    X, info = build_live_window(feature_set)
+    model, scaler = load_production_model(meta, feature_set)
 
     n_feat = X.shape[2]
     X_scaled = scaler.transform(X.reshape(-1, n_feat)).reshape(X.shape)

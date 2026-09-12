@@ -24,7 +24,7 @@ from features import build_features, FEATURES_TECH
 from alpaca_client import get_news, AlpacaError
 
 MODEL_DIR = ROOT / "models"
-METADATA_PATH = MODEL_DIR / "production_metadata.json"
+DEFAULT_FEATURE_SET = "full10_alpaca"
 
 # Πόσες ημερολογιακές ημέρες πίσω κατεβάζουμε — αρκετές ώστε να καλύπτουν
 # το SMA_200 (200 trading days ≈ 290 ημερολογιακές) συν το lookback.
@@ -35,12 +35,14 @@ class LiveFeatureError(Exception):
     """Αδυναμία κατασκευής έγκυρων features."""
 
 
-def load_metadata():
-    if not METADATA_PATH.exists():
+def load_metadata(feature_set=DEFAULT_FEATURE_SET):
+    path = MODEL_DIR / feature_set / "production_metadata.json"
+    if not path.exists():
         raise LiveFeatureError(
-            f"Δεν βρέθηκε {METADATA_PATH}. Τρέξε πρώτα: python src/persist_model.py"
+            f"Δεν βρέθηκε {path}. Τρέξε πρώτα:\n" 
+            f" python src/persist_model.py --feature-set {feature_set}"
         )
-    return json.loads(METADATA_PATH.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def fetch_market_data():
@@ -126,12 +128,12 @@ def fetch_recent_sentiment(days_back=30):
     return daily
 
 
-def build_live_window():
+def build_live_window(feature_set=DEFAULT_FEATURE_SET):
     """
     Επιστρέφει (X, info) όπου X έχει σχήμα (1, lookback, n_features),
     έτοιμο για το μοντέλο.
     """
-    meta = load_metadata()
+    meta = load_metadata(feature_set)
     features, lookback = meta["features"], meta["lookback"]
     needs_sentiment = "SentimentMean" in features
 
@@ -140,7 +142,7 @@ def build_live_window():
 
     sentiment_info = {}
     if needs_sentiment:
-        daily = fetch_recent_sentiment()
+        daily = fetch_recent_sentiment(days_back=max(90, lookback * 2))
         if daily.empty:
             raise LiveFeatureError("Καμία είδηση τις τελευταίες 30 ημέρες — "
                                    "πιθανό πρόβλημα στο news API")
@@ -182,7 +184,12 @@ def build_live_window():
 
 
 if __name__ == "__main__":
-    X, info = build_live_window()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--feature-set", default=DEFAULT_FEATURE_SET)
+    args = ap.parse_args()
+
+    X, info = build_live_window(args.feature_set)
     print("Live feature window κατασκευάστηκε\n")
     for k, v in info.items():
         print(f"  {k:24s}: {v}")

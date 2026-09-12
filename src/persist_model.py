@@ -59,6 +59,8 @@ def train_and_save(feature_set=DEFAULT_FEATURE_SET):
     best = subset.sort_values("val_bal_acc_mean", ascending=False).iloc[0]
     model_name, lookback = best["model"], int(best["lookback"])
     features = FEATURE_SETS[feature_set]
+    out_dir = MODEL_DIR / feature_set
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Production model: {feature_set}/{model_name}, lookback={lookback}, "
           f"val_bal_acc={best['val_bal_acc_mean']*100:.2f}%")
@@ -77,7 +79,7 @@ def train_and_save(feature_set=DEFAULT_FEATURE_SET):
         model = train_model(model_name, X_tr_s, y_tr, X_va_s, y_va,
                             hidden_size=int(best["hidden"]), dropout=float(best["dropout"]),
                             lr=float(best["lr"]), seed=PRODUCTION_SEED)
-        torch.save(model.state_dict(), MODEL_DIR / "production_model.pt")
+        torch.save(model.state_dict(), out_dir / "production_model.pt")
         test_pred = predict(model, X_te_s)
         params = {"hidden_size": int(best["hidden"]), "dropout": float(best["dropout"]),
                   "lr": float(best["lr"]), "n_features": X_tr.shape[2]}
@@ -90,11 +92,11 @@ def train_and_save(feature_set=DEFAULT_FEATURE_SET):
         set_all_seeds(PRODUCTION_SEED)
         model = build_flat_model(model_name, params, PRODUCTION_SEED)
         model.fit(flatten(X_tr_s), (y_tr > 0).astype(int))
-        with open(MODEL_DIR / "production_model.pkl", "wb") as f:
+        with open(out_dir / "production_model.pkl", "wb") as f:
             pickle.dump(model, f)
         test_pred = model.predict_proba(flatten(X_te_s))[:, 1] - 0.5
 
-    with open(MODEL_DIR / "production_scaler.pkl", "wb") as f:
+    with open(out_dir / "production_scaler.pkl", "wb") as f:
         pickle.dump(scaler, f)
 
     acc = balanced_accuracy_score((y_te > 0).astype(int), (test_pred > 0).astype(int))
@@ -118,12 +120,12 @@ def train_and_save(feature_set=DEFAULT_FEATURE_SET):
             "Καμία στατιστικά σημαντική προγνωστική ικανότητα — βλ. αξιολόγηση.",
         ],
     }
-    with open(MODEL_DIR / "production_metadata.json", "w", encoding="utf-8") as f:
+    with open(out_dir / "production_metadata.json", "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
 
     print(f"Sanity check — test balanced accuracy: {acc*100:.2f}%")
-    print(f"\nΑποθηκεύτηκαν στο {MODEL_DIR}:")
-    for f in sorted(MODEL_DIR.iterdir()):
+    print(f"\nΑποθηκεύτηκαν στο {out_dir}:")
+    for f in sorted(out_dir.iterdir()):
         print(f"  - {f.name}")
 
 

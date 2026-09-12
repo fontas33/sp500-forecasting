@@ -29,6 +29,8 @@ SYMBOL = "SPY"
 TARGET_ALLOCATION = 0.95          # % του κεφαλαίου όταν LONG (όχι 100%, περιθώριο)
 TRADE_LOG = ROOT / "data" / "trade_log.csv"
 
+ACTIVE_FEATURE_SET = "full10_alpaca" # Ποιό εκτελεί εντολές
+SHADOW_FEATURE_SETS = ["tech7"]      # Παράγουν σήμα, δεν εκτελούν
 
 def _post(endpoint, payload):
     _check_credentials()
@@ -85,7 +87,7 @@ def log_trade(record):
         row.to_csv(TRADE_LOG, index=False)
 
 
-def run(live=False, force=False):
+def run(live=False, force=False, feature_set=ACTIVE_FEATURE_SET):
     clock = get_clock()
     if not clock["is_open"] and not force:
         print(f"Η αγορά είναι κλειστή. Επόμενο άνοιγμα: {clock['next_open']}")
@@ -93,8 +95,20 @@ def run(live=False, force=False):
               "σε queue μέχρι το άνοιγμα).")
         return
 
-    sig = generate_signal()
+    sig = generate_signal(feature_set)
+    sig["role"] = "active"
     log_signal(sig)
+
+    for shadow in SHADOW_FEATURE_SETS:
+        if shadow == feature_set:
+            continue
+        try:
+            s = generate_signal(shadow)
+            s["role"] = "shadow"
+            log_signal(s)
+            print(f"  [shadow]{shadow}: {s['action']} (raw={s['raw_prediction']:+.6f})")
+        except Exception as exc:
+            print(f"   [shadow] {shadow}: απέτυχε — {type(exc).__name__}: {exc}")
 
     account = get_account()
     if account["trading_blocked"]:
