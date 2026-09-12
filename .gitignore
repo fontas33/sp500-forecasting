@@ -9,6 +9,7 @@ data/*.csv
 !data/backtest_results.csv
 !data/walkforward_results.csv
 !data/signal_log.csv
+!data/trade_log.csv
 models/*.pkl
 models/*.pt
 *.pt
