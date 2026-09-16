@@ -11,8 +11,8 @@ data/*.csv
 !data/signal_log.csv
 !data/trade_log.csv
 data/scheduler.log
-models/*.pkl
-models/*.pt
+data/alpaca_news_progress.json
+models/
 *.pt
 .DS_Store
 .ipynb_checkpoints/
