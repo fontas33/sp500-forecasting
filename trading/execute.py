@@ -18,6 +18,11 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+import sys, io
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stdout = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "trading"))
 

@@ -1,10 +1,10 @@
 strategy,total_return,CAGR,ann_vol,Sharpe,Sortino,max_drawdown,exposure,n_trades
-full10/XGB (t=0.0),5.53,2.49,16.49,0.013,0.018,-21.55,71.69,188
-Buy & Hold [full10/XGB window],9.75,4.35,18.94,0.129,0.187,-26.22,100.0,1
-Risk-free [full10/XGB window],8.2,3.67,0.12,,,0.0,0.0,0
-full10/LSTM (t=0.0),17.78,7.36,15.42,0.315,0.372,-13.41,49.91,62
-Buy & Hold [full10/LSTM window],8.58,3.63,18.83,0.102,0.149,-26.22,100.0,1
-Risk-free [full10/LSTM window],8.21,3.48,0.13,,,0.0,0.0,0
-full10/RF (t=0.003),5.34,2.41,18.86,0.029,0.042,-26.99,97.82,23
-Buy & Hold [full10/RF window],9.75,4.35,18.94,0.129,0.187,-26.22,100.0,1
-Risk-free [full10/RF window],8.2,3.67,0.12,,,0.0,0.0,0
+full10_alpaca/LSTM (t=0.0),10.36,6.26,15.41,0.218,0.267,-15.98,80.44,33
+Buy & Hold [full10_alpaca/LSTM window],28.04,16.45,17.35,0.74,0.963,-19.21,100.0,1
+Risk-free [full10_alpaca/LSTM window],6.51,3.96,0.02,,,0.0,0.0,0
+tech7/GRU (t=0.0),28.25,17.99,16.47,0.852,1.115,-17.98,92.61,15
+Buy & Hold [tech7/GRU window],26.39,16.85,17.67,0.75,0.969,-19.21,100.0,1
+Risk-free [tech7/GRU window],5.98,3.94,0.02,,,0.0,0.0,0
+tech7/LSTM (t=0.0),29.99,19.05,16.92,0.886,1.141,-17.91,92.08,17
+Buy & Hold [tech7/LSTM window],26.39,16.85,17.67,0.75,0.969,-19.21,100.0,1
+Risk-free [tech7/LSTM window],5.98,3.94,0.02,,,0.0,0.0,0
