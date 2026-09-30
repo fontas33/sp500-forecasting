@@ -182,9 +182,11 @@ def fig_mode_collapse_bias():
  
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.barh(y, df["pct_up_mean"] * 100, color=NAVY, alpha=0.7, height=0.6)
-    ax.axvline(53.7, color=RED, ls="--", lw=1.3)
-    ax.text(54.5, -0.8, "Πραγματικό ποσοστό\nανοδικών ημερών (53,7%)",
-            fontsize=7.5, color=RED)
+    snap = read("market_snapshot.csv")
+    up = (np.log(snap["Close"]).diff().dropna() > 0).mean() * 100
+    ax.axvline(up, color=RED, ls="--", lw=1.3)
+    ax.text(up + 0.8, -0.8, "Ποσοστό ανοδικών ημερών\n(όλη η περίοδος, "
+            + f"{up:.1f}".replace(".", ",") + "%)", fontsize=7.5, color=RED)
     ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=8)
     ax.set_xlabel("Ποσοστό προβλέψεων «άνοδος» (%)")
     ax.set_title("Μεροληψία προβλέψεων προς την πλειοψηφική κλάση")
