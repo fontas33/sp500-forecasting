@@ -83,15 +83,17 @@ def generate_signal(feature_set=DEFAULT_FEATURE_SET):
            or k.startswith("last_real")},
     }
 
+LOG_COLUMNS = ["timestamp", "as_of_date", "last_close", "model", "raw_prediction", "threshold", "signal", "action", "role", "staleness_days", "last_real_sentiment"]
 
 def log_signal(sig):
-    """Καταγραφή κάθε σήματος — απαραίτητο για audit trail."""
-    import pandas as pd
-    row = pd.DataFrame([sig])
-    if LOG_PATH.exists():
-        row.to_csv(LOG_PATH, mode="a", header=False, index=False)
-    else:
-        row.to_csv(LOG_PATH, index=False)
+    """Καταγραφή με σταθερές στήλες, ανεξάρτητα από το ποια πεδία έχει το σήμα."""
+    import csv
+    new_file = not LOG_PATH.exists()
+    with open(LOG_PATH, "a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=LOG_COLUMNS)
+        if new_file:
+            w.writeheader()
+        w.writerow({c: sig.get(c, "") for c in LOG_COLUMNS})
 
 
 if __name__ == "__main__":
