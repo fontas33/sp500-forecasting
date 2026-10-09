@@ -1,0 +1,6 @@
+{
+    "files.readonlyInclude": {
+        "data/*.csv": true,
+        "data/*.log": true
+    }
+}
